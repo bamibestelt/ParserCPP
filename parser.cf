@@ -1,0 +1,319 @@
+entrypoints Program, Stm, Exp;
+
+
+
+-- a program is a sequence of definition
+Prog. Program ::= [External_declaration];
+
+
+
+-- there can be one or nonempty list of definitions
+(:[]).    [External_declaration] ::= External_declaration ;
+(:). [External_declaration] ::= External_declaration [External_declaration] ;
+
+
+
+-- definitions can contain functions and also declarations
+Afunc.  External_declaration ::= Function_def ;
+Global. External_declaration ::= Dec ;
+Qconstant. External_declaration ::= Qcons ;
+
+
+
+(:[]).   [BasicType] ::= BasicType ;
+(:). [BasicType] ::= BasicType [BasicType] ;
+
+
+
+-- defining grammar for a function
+NewFunc. Function_def ::= Declaration_specifier Declarator Body;
+
+
+
+-- defining grammar for declarations
+Declarators. Dec ::= Declaration_specifier [Init_declarator] ";" ;
+
+
+
+-- defining grammar for declarations
+NewCons. Qcons ::= Qcons_specifier  ";" ;
+QCons. Qcons_specifier ::= Cons_specifier QualifiedConstant ;
+
+
+(:[]).    [Dec] ::= Dec;
+(:). [Dec] ::= Dec [Dec];
+
+
+
+Type. Declaration_specifier ::= Type_specifier ;
+Basictype. Type_specifier ::= BasicType ;
+Constype. Type_specifier ::= QualconsType ;
+Typedeftype. Type_specifier ::= TypedefType ;
+Constspec. Type_specifier ::= ConstSpec ;
+Objecttypespec. Type_specifier ::= ObjecttypeSpec ;
+Typeoftypesspec. Type_specifier ::= TypeoftypesSpec ;
+
+
+
+(:[]).   [Init_declarator] ::= Init_declarator ;
+(:). [Init_declarator] ::= Init_declarator "," [Init_declarator] ;
+
+
+
+OnlyDecl.  Init_declarator ::= Declarator ;
+InitDecl. Init_declarator ::= Declarator "=" Initializer;
+
+
+
+Tvoid.        BasicType ::= "void";
+Tbool.        BasicType ::= "bool";
+Tchar.        BasicType ::= "char";
+Tshort.       BasicType ::= "short";
+Tint.         BasicType ::= "int";
+Tlong.        BasicType ::= "long";
+Tfloat.       BasicType ::= "float";
+Tdouble.      BasicType ::= "double";
+Tsigned.      BasicType ::= "signed";
+Tunsigned.    BasicType ::= "unsigned";
+-- dont forget to add struct declarations
+
+
+
+Qconstype.  QualconsType ::= QualifiedConstant;
+
+
+
+Ctypedef.  TypedefType ::= Typedef_specifier QualconsType;
+
+
+
+CconstSpecOne.  ConstSpec ::= Const_specifier QualconsType;
+CconstSpecTwo.  ConstSpec ::= Const_specifier BasicType;
+CconstSpecThree.  ConstSpec ::= Const_specifier TypeoftypesSpec;
+CconstSpecFour.  ConstSpec ::= Const_specifier ObjecttypeSpec;
+
+
+
+Objecttype. ObjecttypeSpec ::= Ident ;
+TypesoftypeOne. TypeoftypesSpec ::= BasicType Typesoftype_specifier ;
+TypesoftypeTwo. TypeoftypesSpec ::= ObjecttypeSpec Typesoftype_specifier ;
+TypesoftypeThree. TypeoftypesSpec ::= QualconsType Typesoftype_specifier ;
+
+
+
+Cusing.     Cons_specifier ::= "using";
+
+Ttypedef.   Typedef_specifier ::= "typedef";
+
+TconstSpec.   Const_specifier ::= "const";
+
+TtypesoftypeSpec. Typesoftype_specifier ::= "&" ;
+
+
+
+NoPointer. Declarator ::= Direct_declarator ;
+
+
+
+Name. Direct_declarator ::= Ident ;
+NewFuncDec. Direct_declarator ::= Direct_declarator "(" Parameter_type ")" ;
+OldFuncDec. Direct_declarator ::= Direct_declarator "(" ")" ;
+
+
+
+AllSpec.  Parameter_type ::= Parameter_declarations ;
+More. Parameter_type ::= Parameter_declarations "," "..." ;
+
+
+
+ParamDec.     Parameter_declarations ::= Parameter_declaration ;                   
+MoreParamDec. Parameter_declarations ::= Parameter_declarations "," Parameter_declaration ;
+
+
+
+OnlyType.      Parameter_declaration ::= Declaration_specifier ;
+TypeAndParam. Parameter_declaration ::= Declaration_specifier Declarator ;
+
+
+
+InitExpr. Initializer ::= Exp2 ;
+
+
+
+ExprS. Stm ::= Expression_stm ;
+LV. Stm ::= "{" [LVarStatement] "}";
+SelS. Stm ::= Selection_stm ;
+IterS. Stm ::= Iter_stm ;
+JumpS. Stm ::= Jump_stm ;
+
+
+
+-- qualified constant
+-- implemented as nonempty lists separated by ::
+-- elements of the list are identifiers and template instatiation
+
+QualConstant. QualifiedConstant ::= [Constants] ;
+
+(:[]).   [Constants] ::= Constants ;
+(:). [Constants] ::= Constants "::" [Constants] ;
+
+ConIdent. Constants ::= Ident;
+ConTemplate. Constants ::= TemplateInstatiation;
+
+TemplateIns. TemplateInstatiation ::= Ident "<" BasicType ">" ;
+
+
+
+-- decl-specifier-seq
+-- sequence of declaration types
+
+
+
+-- variable declarations and statements
+LVar.		LVarStatement ::= Declaration_specifier [Init_declarator] ";";
+Statem.		LVarStatement ::= Stm;
+separator 	LVarStatement "";
+
+BodyTwo.	Body ::= "{" [LVarStatement] "}";
+
+
+
+SexprOne. Expression_stm ::= ";" ;
+SexprTwo. Expression_stm ::= Exp ";" ;
+
+
+
+SselOne. Selection_stm ::= "if" "(" Exp ")" Stm ;
+
+
+
+SiterOne. Iter_stm ::= "while" "(" Exp ")" Stm;
+
+
+
+SjumpFive. Jump_stm ::= "return" Exp ";" ;
+SjumpSix. Jump_stm ::= "throw" Exp ";" ;
+
+
+
+(:[]).   [Stm] ::= Stm ;
+(:). [Stm] ::= Stm [Stm];
+
+
+
+-- qualified identifier
+separator nonempty Ident ".";
+
+Ecomma.      Exp   ::= Exp "," Exp2;
+Eassign.     Exp2  ::= Exp15 Assignment_op Exp2;
+Econdition.  Exp3  ::= Exp4 "?" Exp ":" Exp3;
+Elor.        Exp4  ::= Exp4 "||" Exp5;
+Eland.       Exp5  ::= Exp5 "&&" Exp6;
+Ebitor.      Exp6  ::= Exp6 "|" Exp7;
+Ebitexor.    Exp7  ::= Exp7 "^" Exp8;
+Ebitand.     Exp8  ::= Exp8 "&" Exp9;
+Eeq.         Exp9  ::= Exp9 "==" Exp10;
+Eneq.        Exp9  ::= Exp9 "!=" Exp10;
+Elthan.      Exp10 ::= Exp10 "<" Exp11;
+Egrthan.     Exp10 ::= Exp10 ">" Exp11;
+Ele.         Exp10 ::= Exp10 "<=" Exp11;
+Ege.         Exp10 ::= Exp10 ">=" Exp11;
+Eleft.       Exp11 ::= Exp11 "<<" Exp12;
+Eright.      Exp11 ::= Exp11 ">>" Exp12;
+Eplus.       Exp12 ::= Exp12 "+" Exp13;
+Eminus.      Exp12 ::= Exp12 "-" Exp13;
+Etimes.      Exp13 ::= Exp13 "*" Exp15;
+Ediv.        Exp13 ::= Exp13 "/" Exp15;
+Emod. 		 Exp13 ::= Exp13 "%" Exp15;
+Epreinc.     Exp15 ::= "++" Exp15;
+Epredec.     Exp15 ::= "--" Exp15;
+Ebytesexpr.  Exp15 ::= "sizeof" Exp15;
+Earray.      Exp16 ::= Exp16 "[" Exp "]" ;
+Epoint.      Exp16 ::= Exp16 "->" Ident;
+Epostinc.    Exp16 ::= Exp16 "++";
+Epostdec.    Exp16 ::= Exp16 "--";
+Equalconst.  Exp17 ::= QualifiedConstant;
+Emth.		 Exp17 ::= MthCall;
+Econst.      Exp17 ::= Constant;
+Estring.     Exp17 ::= String;
+Evar.        Exp18 ::= [Ident];
+
+
+
+Mmth.		 MthCall ::= [Ident] Args;
+
+ArgsOne.	Args ::= "(" ")";
+ArgsTwo.	Args ::= "(" [Exp2] ")";
+
+--separator Exp ",";
+
+coercions Exp 18;
+
+
+
+token JChar '\'' ((char - ["'\\"]) | ('\\' ["'\\ntr"])) '\'';
+
+token JDouble (((digit+ '.')|('.' digit+))(('e'|'E') ('-')? digit+)?)|
+              (digit+ ('e'|'E') ('-')? digit+)|(digit+ '.' digit+ 'E' ('-')? digit+);
+
+token JFloat (((digit+ '.' digit+)|(digit+ '.')|('.' digit+))(('e'|'E')('-')? digit+)?
+                               ('f'|'F'))|((digit+ ('e'|'E')('-')? digit+)('f'|'F'));
+
+
+
+Efloat.        Constant ::= Double;
+Echar.         Constant ::= JChar;
+Ecdouble.      Constant ::= JDouble;
+Ecfloat.       Constant ::= JFloat;
+Eint. Constant ::= Integer;
+
+_. Exp   ::= Exp2 ;
+_. Exp2  ::= Exp3 ;
+_. Exp3  ::= Exp4 ;
+_. Exp4  ::= Exp5 ;
+_. Exp5  ::= Exp6 ;
+_. Exp6  ::= Exp7 ;
+_. Exp7  ::= Exp8 ;
+_. Exp8  ::= Exp9 ;
+_. Exp9  ::= Exp10 ;
+_. Exp10 ::= Exp11 ;
+_. Exp11 ::= Exp12 ;
+_. Exp12 ::= Exp13 ;
+_. Exp13 ::= Exp15 ;
+--_. Exp14 ::= Exp15 ;
+_. Exp15 ::= Exp16 ;
+_. Exp16 ::= Exp17 ;
+_. Exp16 ::= Exp18 ;
+_. Exp18 ::= "(" Exp ")" ;
+
+
+(:[]).   [Exp2] ::= Exp2 ;
+(:). [Exp2] ::= Exp2 "," [Exp2];
+
+Assign.       Assignment_op ::= "=" ;
+AssignMul.    Assignment_op ::= "*=" ;
+AssignDiv.    Assignment_op ::= "/=" ;
+AssignMod.    Assignment_op ::= "%=" ;
+AssignAdd.    Assignment_op ::= "+=" ;
+AssignSub.    Assignment_op ::= "-=" ;
+AssignLeft.   Assignment_op ::= "<<=" ;
+AssignRight.  Assignment_op ::= ">>=" ;
+AssignAnd.    Assignment_op ::= "&=" ;
+AssignXor.    Assignment_op ::= "^=" ;
+AssignOr. Assignment_op ::= "|=" ;
+
+comment "/*" "*/" ;
+comment "//";
+comment "#";
+
+
+-- bugs to fix
+-- new line string
+
+{-
+
+(ExprS (SexprTwo (Emth (Mmth [Ident "sort"] (ArgsTwo [Emth (Mmth [Ident "homework",Ident "begin"] ArgsOne),Emth (Mmth [Ident "homework",Ident "end"] ArgsOne)])))))
+
+(ExprS (SexprTwo (Emth (Mmth [Ident "sort"] (ArgsTwo [Evar (Ident "x"),Evar (Ident "y")])))))
+
+-}
