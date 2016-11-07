@@ -64,17 +64,21 @@ OnlyDecl.  Init_declarator ::= Declarator ;
 InitDecl. Init_declarator ::= Declarator "=" Initializer;
 
 
+BasicTypeOne. BasicType ::= BuiltInType ;
+BasicTypeTwo. BasicType ::= StringType ;
+StringTypeOne. StringType ::= Ident ;
 
-Tvoid.        BasicType ::= "void";
-Tbool.        BasicType ::= "bool";
-Tchar.        BasicType ::= "char";
-Tshort.       BasicType ::= "short";
-Tint.         BasicType ::= "int";
-Tlong.        BasicType ::= "long";
-Tfloat.       BasicType ::= "float";
-Tdouble.      BasicType ::= "double";
-Tsigned.      BasicType ::= "signed";
-Tunsigned.    BasicType ::= "unsigned";
+
+Tvoid.        BuiltInType ::= "void";
+Tbool.        BuiltInType ::= "bool";
+Tchar.        BuiltInType ::= "char";
+Tshort.       BuiltInType ::= "short";
+Tint.         BuiltInType ::= "int";
+Tlong.        BuiltInType ::= "long";
+Tfloat.       BuiltInType ::= "float";
+Tdouble.      BuiltInType ::= "double";
+Tsigned.      BuiltInType ::= "signed";
+Tunsigned.    BuiltInType ::= "unsigned";
 -- dont forget to add struct declarations
 
 
@@ -112,9 +116,6 @@ TtypesoftypeSpec. Typesoftype_specifier ::= "&" ;
 
 
 NoPointer. Declarator ::= Direct_declarator ;
-
-
-
 Name. Direct_declarator ::= Ident ;
 NewFuncDec. Direct_declarator ::= Direct_declarator "(" Parameter_type ")" ;
 OldFuncDec. Direct_declarator ::= Direct_declarator "(" ")" ;
@@ -124,12 +125,8 @@ OldFuncDec. Direct_declarator ::= Direct_declarator "(" ")" ;
 AllSpec.  Parameter_type ::= Parameter_declarations ;
 More. Parameter_type ::= Parameter_declarations "," "..." ;
 
-
-
 ParamDec.     Parameter_declarations ::= Parameter_declaration ;                   
 MoreParamDec. Parameter_declarations ::= Parameter_declarations "," Parameter_declaration ;
-
-
 
 OnlyType.      Parameter_declaration ::= Declaration_specifier ;
 TypeAndParam. Parameter_declaration ::= Declaration_specifier Declarator ;
@@ -160,19 +157,23 @@ QualConstant. QualifiedConstant ::= [Constants] ;
 ConIdent. Constants ::= Ident;
 ConTemplate. Constants ::= TemplateInstatiation;
 
-TemplateIns. TemplateInstatiation ::= Ident "<" BasicType ">" ;
+TemplateIns. TemplateInstatiation ::= Ident "<" [TypeList] ">" ;
 
+LTypes.TypeList ::= BasicType ;
 
-
--- decl-specifier-seq
--- sequence of declaration types
+separator TypeList "," ;
 
 
 
 -- variable declarations and statements
-LVar.		LVarStatement ::= Declaration_specifier [Init_declarator] ";";
+LVar.		LVarStatement ::= Declaration_specifier [Init_declarator] ";" ;
 Statem.		LVarStatement ::= Stm;
 separator 	LVarStatement "";
+
+-- need to be more sophisticated
+LFor.		ForStatement ::= Declaration_specifier [Init_declarator] ;
+StateFor.	ForStatement ::= Exp;
+separator 	ForStatement ";";
 
 BodyTwo.	Body ::= "{" [LVarStatement] "}";
 
@@ -184,10 +185,12 @@ SexprTwo. Expression_stm ::= Exp ";" ;
 
 
 SselOne. Selection_stm ::= "if" "(" Exp ")" Stm ;
+SselTwo. Selection_stm ::= "if" "(" Exp ")" Stm "else" Stm ;
 
 
 
-SiterOne. Iter_stm ::= "while" "(" Exp ")" Stm;
+SiterOne. Iter_stm ::= "while" "(" Exp ")" Stm ;
+SiterTwo. Iter_stm ::= "for" "(" [ForStatement] ")" Stm ;
 
 
 
@@ -218,6 +221,7 @@ Elthan.      Exp10 ::= Exp10 "<" Exp11;
 Egrthan.     Exp10 ::= Exp10 ">" Exp11;
 Ele.         Exp10 ::= Exp10 "<=" Exp11;
 Ege.         Exp10 ::= Exp10 ">=" Exp11;
+Enot.        Exp11 ::= "!" Exp11;
 Eleft.       Exp11 ::= Exp11 "<<" Exp12;
 Eright.      Exp11 ::= Exp11 ">>" Exp12;
 Eplus.       Exp12 ::= Exp12 "+" Exp13;
@@ -228,24 +232,37 @@ Emod. 		 Exp13 ::= Exp13 "%" Exp15;
 Epreinc.     Exp15 ::= "++" Exp15;
 Epredec.     Exp15 ::= "--" Exp15;
 Ebytesexpr.  Exp15 ::= "sizeof" Exp15;
-Earray.      Exp16 ::= Exp16 "[" Exp "]" ;
 Epoint.      Exp16 ::= Exp16 "->" Ident;
 Epostinc.    Exp16 ::= Exp16 "++";
 Epostdec.    Exp16 ::= Exp16 "--";
+Earray.      Exp17 ::= ArrAcc ;
 Equalconst.  Exp17 ::= QualifiedConstant;
 Emth.		 Exp17 ::= MthCall;
+Efld.		 Exp17 ::= FieldAcc;
 Econst.      Exp17 ::= Constant;
 Estring.     Exp17 ::= String;
+Epointer.    Exp17 ::= "*" Ident;
 Evar.        Exp18 ::= [Ident];
 
 
 
+Aarr.		 ArrAcc ::= [Ident] "[" Exp "]";
+Aarr1.		 ArrAcc ::= SpecExp "[" Exp "]";
+
+Cnp.		SpecExp ::= SpecExpNP;
+
+CNLit.		SpecExpNP ::= Constant;
+CNParr.		SpecExpNP ::= ArrAcc;
+CNPmth.		SpecExpNP ::= MthCall;
+CNPfld.		SpecExpNP ::= FieldAcc;
+
 Mmth.		 MthCall ::= [Ident] Args;
+Mmth1.		 MthCall ::= SpecExpNP Args;
+
+Ffvar.		 FieldAcc ::= SpecExp "." Ident;
 
 ArgsOne.	Args ::= "(" ")";
 ArgsTwo.	Args ::= "(" [Exp2] ")";
-
---separator Exp ",";
 
 coercions Exp 18;
 
@@ -265,7 +282,7 @@ Efloat.        Constant ::= Double;
 Echar.         Constant ::= JChar;
 Ecdouble.      Constant ::= JDouble;
 Ecfloat.       Constant ::= JFloat;
-Eint. Constant ::= Integer;
+Eint. 		   Constant ::= Integer;
 
 _. Exp   ::= Exp2 ;
 _. Exp2  ::= Exp3 ;
@@ -280,15 +297,13 @@ _. Exp10 ::= Exp11 ;
 _. Exp11 ::= Exp12 ;
 _. Exp12 ::= Exp13 ;
 _. Exp13 ::= Exp15 ;
---_. Exp14 ::= Exp15 ;
 _. Exp15 ::= Exp16 ;
 _. Exp16 ::= Exp17 ;
-_. Exp16 ::= Exp18 ;
+_. Exp17 ::= Exp18 ;
 _. Exp18 ::= "(" Exp ")" ;
 
 
-(:[]).   [Exp2] ::= Exp2 ;
-(:). [Exp2] ::= Exp2 "," [Exp2];
+separator Exp2 "," ;
 
 Assign.       Assignment_op ::= "=" ;
 AssignMul.    Assignment_op ::= "*=" ;
@@ -310,10 +325,18 @@ comment "#";
 -- bugs to fix
 -- new line string
 
+
 {-
 
-(ExprS (SexprTwo (Emth (Mmth [Ident "sort"] (ArgsTwo [Emth (Mmth [Ident "homework",Ident "begin"] ArgsOne),Emth (Mmth [Ident "homework",Ident "end"] ArgsOne)])))))
+(ExprS (SexprTwo (Emth (Mmth [Ident "homework",Ident "push_back"] (ArgsTwo [Evar [Ident "x"]])))))))
 
-(ExprS (SexprTwo (Emth (Mmth [Ident "sort"] (ArgsTwo [Evar (Ident "x"),Evar (Ident "y")])))))
 
+ret[entry[0]].push_back(Rule(entry.begin() + 1, entry.end()));
+
+Statem (ExprS (SexprTwo (Emth (Mmth [Ident "sort"] (ArgsTwo [Emth (Mmth [Ident "homework",Ident "begin"] ArgsOne),Emth (Mmth [Ident "homework",Ident "end"] ArgsOne)])))))
+
+
+
+
+(Exps (Emth (Mmth1 (CNPfld (Ffvar (Cnp (CNParr (Aarr [Ident "ret"] (Earr (Aarr [Ident "entry"] (Econst (Eoctal (Octal "0")))))))) (Ident "push_back"))) (Args [Emth (Mmth [Ident "Rule"] (Args [Eplus (Emth (Mmth [Ident "entry",Ident "begin"] (Args []))) (Econst (Eint 1)),Emth (Mmth [Ident "entry",Ident "end"] (Args []))
 -}
