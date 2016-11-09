@@ -15,23 +15,26 @@ separator External_declaration "";
 -- definitions can contain functions and also declarations
 Afunc.  External_declaration ::= Function_def ;
 Global. External_declaration ::= Dec ;
-Qconstant. External_declaration ::= Qcons ;
+--Qconstant. External_declaration ::= Qcons ;
 
 
 
 -- defining grammar for a function
 NewFunc. Function_def ::= Declaration_specifier Declarator Body;
+NewFuncTwo. Function_def ::= Declaration_specifier Declarator ";" ;
 
 
 
 -- defining grammar for declarations
 Declarators. Dec ::= Declaration_specifier [Init_declarator] ";" ;
-separator Dec "";
+DeclaratorsTwo. Dec ::= Declaration_specifier ";" ;
+--separator Dec "";
+
 
 
 -- defining grammar for declarations
-NewCons. Qcons ::= Qcons_specifier  ";" ;
-QCons. Qcons_specifier ::= Cons_specifier QualifiedConstant ;-- using
+--NewCons. Qcons ::= Qcons_specifier  ";" ;
+--QCons. Qcons_specifier ::= Cons_specifier QualifiedConstant ;
 
 
 
@@ -41,11 +44,11 @@ TypeThree. Declaration_specifier ::= Declaration_specifier Declaration_postfix;
 
 DprefixOne. Declaration_prefix ::= "typedef";
 DprefixTwo. Declaration_prefix ::= "const";
+DprefixThree. Declaration_prefix ::= "using";
 
 DpostfixOne. Declaration_postfix ::= "&";
 
 Basictype. Type_specifier ::= BasicType ;
-Constype. Type_specifier ::= QualconsType ;
 
 
 
@@ -59,7 +62,8 @@ InitDecl. Init_declarator ::= Declarator "=" Initializer;
 
 
 BasicTypeOne. BasicType ::= BuiltInType ;
-BasicTypeTwo. BasicType ::= Ident ; --reduce conflicts
+BasicTypeTwo. BasicType ::= Exp;
+
 
 
 Tvoid.        BuiltInType ::= "void";
@@ -73,10 +77,6 @@ Tdouble.      BuiltInType ::= "double";
 Tsigned.      BuiltInType ::= "signed";
 Tunsigned.    BuiltInType ::= "unsigned";
 -- dont forget to add struct declarations
-
-
-
-Qconstype.  QualconsType ::= QualifiedConstant; --reduce conflicts
 
 
 
@@ -124,10 +124,18 @@ QualConstant. QualifiedConstant ::= [Constants] ;
 (:[]).   [Constants] ::= Constants ;
 (:). [Constants] ::= Constants "::" [Constants] ;
 
-ConIdent. Constants ::= Ident; --reduce conflicts
+ConIdent. Constants ::= Ident;
 ConTemplate. Constants ::= TemplateInstatiation;
 
-TemplateIns. TemplateInstatiation ::= Ident "<" Parameter_type ">" ;
+TemplateIns. TemplateInstatiation ::= Ident "<" TypeListEnum ">" ;
+AllEnum.  TypeListEnum ::= EnumTypes ;
+MoreEnum. TypeListEnum ::= EnumTypes "," "..." ;
+
+TypeDec.     EnumTypes ::= EnumType ;                   
+MoreTypeDec. EnumTypes ::= EnumTypes "," EnumType ;
+
+PlainType.      EnumType ::= Ident ;
+TypeParam. EnumType ::= BuiltInType ;
 
 
 
@@ -170,18 +178,15 @@ SjumpFive. Jump_stm ::= "return" Exp ";" ;
 
 
 
--- qualified identifier
---separator nonempty Ident ".";
-
 Ethrow.		Exp ::= "throw" Exp2;
 Econdition.  Exp2  ::= Exp3 "?" Exp ":" Exp2;
 Eassign.     Exp2  ::= Exp13 Assignment_op Exp2;
 Elor.        Exp3  ::= Exp3 "||" Exp4;
 Eland.       Exp4  ::= Exp4 "&&" Exp5;
 
-Ebitor.      Exp5  ::= Exp5 "|" Exp6;
-Ebitexor.    Exp6  ::= Exp6 "^" Exp7;
-Ebitand.     Exp7  ::= Exp7 "&" Exp8;
+--Ebitor.      Exp5  ::= Exp5 "|" Exp6;
+--Ebitexor.    Exp6  ::= Exp6 "^" Exp7;
+--Ebitand.     Exp7  ::= Exp7 "&" Exp8;
 Eeq.         Exp8  ::= Exp8 "==" Exp9;
 Eneq.        Exp8  ::= Exp8 "!=" Exp9;
 
@@ -210,15 +215,11 @@ Epostdec.    Exp14 ::= Exp14 "--";
 Epoint.      Exp14 ::= Exp14 "." Exp15;
 Eselect.     Exp14 ::= Exp14 "->" Exp15;
 
-
 Emth.		 Exp15 ::= Exp15 Args;
 Earray.      Exp15 ::= Exp15 "[" Exp "]";
---Efld.		 Exp15 ::= FieldAcc;
 Equalconst.  Exp16 ::= QualifiedConstant;
 Econst.      Exp16 ::= Constant;
 Estring.     Exp16 ::= String;
-
---Evar.        Exp16 ::= Ident;
 
 
 
@@ -248,16 +249,16 @@ Eint. 		   Constant ::= Integer;
 separator Exp2 "," ;
 
 Assign.       Assignment_op ::= "=" ;
-AssignMul.    Assignment_op ::= "*=" ;
-AssignDiv.    Assignment_op ::= "/=" ;
-AssignMod.    Assignment_op ::= "%=" ;
+--AssignMul.    Assignment_op ::= "*=" ;
+--AssignDiv.    Assignment_op ::= "/=" ;
+--AssignMod.    Assignment_op ::= "%=" ;
 AssignAdd.    Assignment_op ::= "+=" ;
 AssignSub.    Assignment_op ::= "-=" ;
-AssignLeft.   Assignment_op ::= "<<=" ;
-AssignRight.  Assignment_op ::= ">>=" ;
-AssignAnd.    Assignment_op ::= "&=" ;
-AssignXor.    Assignment_op ::= "^=" ;
-AssignOr. Assignment_op ::= "|=" ;
+--AssignLeft.   Assignment_op ::= "<<=" ;
+--AssignRight.  Assignment_op ::= ">>=" ;
+--AssignAnd.    Assignment_op ::= "&=" ;
+--AssignXor.    Assignment_op ::= "^=" ;
+--AssignOr. Assignment_op ::= "|=" ;
 
 comment "/*" "*/" ;
 comment "//";
