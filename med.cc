@@ -26,9 +26,8 @@ int main()
 	cin >> midterm >> final;
 
 	// ask for and read the homework grades
-	/*cout << "Enter all your homework grades, "
-	        "followed by end-of-file: ";*/
-	cout << "Enter all your homework grades, ";
+	cout << "Enter all your homework grades, "
+	        "followed by end-of-file: ";
 
 	vector<double> homework;
 	double x;
@@ -44,9 +43,8 @@ int main()
 #endif
 	vec_sz size = homework.size();
 	if (size == 0) {
-		/*cout << endl << "You must enter your grades.  "
-		                "Please try again." << endl;	*/
-		cout << endl << "You must enter your grades.  " << endl;
+		cout << endl << "You must enter your grades.  "
+		                "Please try again." << endl;
 		return 1;
 	}
 

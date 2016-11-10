@@ -219,9 +219,12 @@ Emth.		 Exp15 ::= Exp15 Args;
 Earray.      Exp15 ::= Exp15 "[" Exp "]";
 Equalconst.  Exp16 ::= QualifiedConstant;
 Econst.      Exp16 ::= Constant;
-Estring.     Exp16 ::= String;
+Estring.     Exp16 ::= [String];
 
 
+
+(:[]).   [String] ::= String ;
+(:). [String] ::= String [String] ;
 
 ArgsOne.	Args ::= "(" ")";
 ArgsTwo.	Args ::= "(" [Exp2] ")";
@@ -266,20 +269,3 @@ comment "#";
 
 
 -- bugs to fix
--- new line string
-
-
-{-
-
-(ExprS (SexprTwo (Emth (Mmth [Ident "homework",Ident "push_back"] (ArgsTwo [Evar [Ident "x"]])))))))
-
-
-ret[entry[0]].push_back(Rule(entry.begin() + 1, entry.end()));
-
-Statem (ExprS (SexprTwo (Emth (Mmth [Ident "sort"] (ArgsTwo [Emth (Mmth [Ident "homework",Ident "begin"] ArgsOne),Emth (Mmth [Ident "homework",Ident "end"] ArgsOne)])))))
-
-
-
-
-(Exps (Emth (Mmth1 (CNPfld (Ffvar (Cnp (CNParr (Aarr [Ident "ret"] (Earr (Aarr [Ident "entry"] (Econst (Eoctal (Octal "0")))))))) (Ident "push_back"))) (Args [Emth (Mmth [Ident "Rule"] (Args [Eplus (Emth (Mmth [Ident "entry",Ident "begin"] (Args []))) (Econst (Eint 1)),Emth (Mmth [Ident "entry",Ident "end"] (Args []))
--}
