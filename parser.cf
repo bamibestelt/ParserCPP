@@ -1,4 +1,9 @@
-entrypoints Program, Stm, Exp;
+-- This is a group work for Lab 1 DAT105
+-- Drikvy V. Cappenberg
+-- Lamiye Yagublu
+
+
+entrypoints Program;
 
 
 
@@ -15,40 +20,35 @@ separator External_declaration "";
 -- definitions can contain functions and also declarations
 Afunc.  External_declaration ::= Function_def ;
 Global. External_declaration ::= Dec ;
---Qconstant. External_declaration ::= Qcons ;
 
 
 
 -- defining grammar for a function
-NewFunc. Function_def ::= Declaration_specifier Declarator Body;
-NewFuncTwo. Function_def ::= Declaration_specifier Declarator ";" ;
+NewFunc. Function_def ::= Type_specifier Declarator Body ;
+NewFuncTwo. Function_def ::= Type_specifier Declarator ";" ;
 
 
 
 -- defining grammar for declarations
-Declarators. Dec ::= Declaration_specifier [Init_declarator] ";" ;
-DeclaratorsTwo. Dec ::= Declaration_specifier ";" ;
---separator Dec "";
+Declarators. Dec ::= Declaration_specifier ";" ;
+DeclaratorsTwo. Dec ::= Using_prefix Type_specifier ";" ;
 
 
 
--- defining grammar for declarations
---NewCons. Qcons ::= Qcons_specifier  ";" ;
---QCons. Qcons_specifier ::= Cons_specifier QualifiedConstant ;
+TypeOne. Declaration_specifier ::= Typedef_statement Declarator ;
+TypeTwo. Declaration_specifier ::= Type_specifier [Init_declarator] ;
+TypeThree. Declaration_specifier ::= Const_statement [Init_declarator] ;
+
+Typedefstatement. Typedef_statement ::= Typedef_prefix Type_specifier ;
+Conststatement. Const_statement ::= Const_prefix Type_specifier ;
 
 
 
-TypeOne. Declaration_specifier ::= Type_specifier ;
-TypeTwo. Declaration_specifier ::= Declaration_prefix Type_specifier ;
-TypeThree. Declaration_specifier ::= Declaration_specifier Declaration_postfix;
-
-DprefixOne. Declaration_prefix ::= "typedef";
-DprefixTwo. Declaration_prefix ::= "const";
-DprefixThree. Declaration_prefix ::= "using";
+Typedefprefix. Typedef_prefix ::= "typedef";
+Constprefix. Const_prefix ::= "const";
+Usingprefix. Using_prefix ::= "using";
 
 DpostfixOne. Declaration_postfix ::= "&";
-
-Basictype. Type_specifier ::= BasicType ;
 
 
 
@@ -59,10 +59,15 @@ Basictype. Type_specifier ::= BasicType ;
 
 OnlyDecl.  Init_declarator ::= Declarator ;
 InitDecl. Init_declarator ::= Declarator "=" Initializer;
+InitExpr. Initializer ::= Exp2 ;
 
+
+
+Basictype. Type_specifier ::= BasicType ;
+Compoundtype. Type_specifier ::= BasicType Declaration_postfix ;
 
 BasicTypeOne. BasicType ::= BuiltInType ;
-BasicTypeTwo. BasicType ::= Exp;
+BasicTypeTwo. BasicType ::= QualifiedConstant;
 
 
 
@@ -76,11 +81,6 @@ Tfloat.       BuiltInType ::= "float";
 Tdouble.      BuiltInType ::= "double";
 Tsigned.      BuiltInType ::= "signed";
 Tunsigned.    BuiltInType ::= "unsigned";
--- dont forget to add struct declarations
-
-
-
-Cusing.     Cons_specifier ::= "using";
 
 
 
@@ -92,17 +92,20 @@ OldFuncDec. Direct_declarator ::= Direct_declarator "(" ")" ;
 
 
 AllSpec.  Parameter_type ::= Parameter_declarations ;
-More. Parameter_type ::= Parameter_declarations "," "..." ;
+--More. Parameter_type ::= Parameter_declarations "," "..." ;
 
 ParamDec.     Parameter_declarations ::= Parameter_declaration ;                   
 MoreParamDec. Parameter_declarations ::= Parameter_declarations "," Parameter_declaration ;
 
-OnlyType.      Parameter_declaration ::= Declaration_specifier ;
-TypeAndParam. Parameter_declaration ::= Declaration_specifier Declarator ;
+TypeWithTypedef. Parameter_declaration ::= Typedef_statement ;
+TypeAndParamOne. Parameter_declaration ::= CompoundTypeDeclaration;
+TypeAndParamTwo. Parameter_declaration ::= ConstDeclaration;
 
+CompoundDecOne. CompoundTypeDeclaration ::= Type_specifier ;
+CompoundDecTwo. CompoundTypeDeclaration ::= Type_specifier Init_declarator;
 
-
-InitExpr. Initializer ::= Exp2 ;
+ConstDecOne. ConstDeclaration ::= Const_statement ;
+ConstDecTwo. ConstDeclaration ::= Const_statement Init_declarator;
 
 
 
@@ -134,20 +137,17 @@ MoreEnum. TypeListEnum ::= EnumTypes "," "..." ;
 TypeDec.     EnumTypes ::= EnumType ;                   
 MoreTypeDec. EnumTypes ::= EnumTypes "," EnumType ;
 
-PlainType.      EnumType ::= Ident ;
+PlainType.      EnumType ::= QualifiedConstant ;
 TypeParam. EnumType ::= BuiltInType ;
 
 
 
 -- variable declarations and statements
-LVar.		LVarStatement ::= Declaration_specifier [Init_declarator] ";" ;
+LVar.		LVarStatement ::= Declaration_specifier ";" ;
 Statem.		LVarStatement ::= Stm;
 separator 	LVarStatement "";
 
--- need to be more sophisticated
-LFor.		ForStatement ::= Declaration_specifier [Init_declarator] ;
-StateFor.	ForStatement ::= Exp;
-separator 	ForStatement ";";
+
 
 BodyTwo.	Body ::= "{" [LVarStatement] "}";
 
@@ -164,12 +164,14 @@ SselTwo. Selection_stm ::= "if" "(" Exp ")" Stm "else" Stm ;
 
 
 SiterOne. Iter_stm ::= "while" "(" Exp ")" Stm ;
-SiterTwo. Iter_stm ::= "for" "(" [ForStatement] ")" Stm ;
+SiterTwo. Iter_stm ::= "for" "(" ForInit Exp ";" Exp ")" Stm ;
+SiterThree.	Iter_stm ::= "do" Stm "while" "(" Exp ")";
+
+DVar.		ForInit ::= Declaration_specifier ";";
 
 
 
 SjumpFive. Jump_stm ::= "return" Exp ";" ;
---SjumpSix. Jump_stm ::= "throw" Exp ";" ;
 
 
 
@@ -184,9 +186,6 @@ Eassign.     Exp2  ::= Exp13 Assignment_op Exp2;
 Elor.        Exp3  ::= Exp3 "||" Exp4;
 Eland.       Exp4  ::= Exp4 "&&" Exp5;
 
---Ebitor.      Exp5  ::= Exp5 "|" Exp6;
---Ebitexor.    Exp6  ::= Exp6 "^" Exp7;
---Ebitand.     Exp7  ::= Exp7 "&" Exp8;
 Eeq.         Exp8  ::= Exp8 "==" Exp9;
 Eneq.        Exp8  ::= Exp8 "!=" Exp9;
 
@@ -233,6 +232,9 @@ coercions Exp 16;
 
 
 
+
+--token CppIdent (letter | (letter | digit | '_')*) ;
+
 token JChar '\'' ((char - ["'\\"]) | ('\\' ["'\\ntr"])) '\'';
 
 token JDouble (((digit+ '.')|('.' digit+))(('e'|'E') ('-')? digit+)?)|
@@ -252,16 +254,8 @@ Eint. 		   Constant ::= Integer;
 separator Exp2 "," ;
 
 Assign.       Assignment_op ::= "=" ;
---AssignMul.    Assignment_op ::= "*=" ;
---AssignDiv.    Assignment_op ::= "/=" ;
---AssignMod.    Assignment_op ::= "%=" ;
 AssignAdd.    Assignment_op ::= "+=" ;
 AssignSub.    Assignment_op ::= "-=" ;
---AssignLeft.   Assignment_op ::= "<<=" ;
---AssignRight.  Assignment_op ::= ">>=" ;
---AssignAnd.    Assignment_op ::= "&=" ;
---AssignXor.    Assignment_op ::= "^=" ;
---AssignOr. Assignment_op ::= "|=" ;
 
 comment "/*" "*/" ;
 comment "//";
