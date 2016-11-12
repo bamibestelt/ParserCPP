@@ -1,6 +1,7 @@
 -- This is a group work for Lab 1 DAT105
+-- Deadline 14/11/2016
 -- Drikvy V. Cappenberg
--- Lamiye Yagublu
+-- Lamiya Yagublu
 
 
 entrypoints Program;
@@ -66,6 +67,8 @@ InitExpr. Initializer ::= Exp2 ;
 Basictype. Type_specifier ::= BasicType ;
 Compoundtype. Type_specifier ::= BasicType Declaration_postfix ;
 
+
+
 BasicTypeOne. BasicType ::= BuiltInType ;
 BasicTypeTwo. BasicType ::= QualifiedConstant;
 
@@ -85,7 +88,7 @@ Tunsigned.    BuiltInType ::= "unsigned";
 
 
 NoPointer. Declarator ::= Direct_declarator ;
-Name. Direct_declarator ::= Ident ;
+Name. Direct_declarator ::= CppIdent ;
 NewFuncDec. Direct_declarator ::= Direct_declarator "(" Parameter_type ")" ;
 OldFuncDec. Direct_declarator ::= Direct_declarator "(" ")" ;
 
@@ -127,10 +130,10 @@ QualConstant. QualifiedConstant ::= [Constants] ;
 (:[]).   [Constants] ::= Constants ;
 (:). [Constants] ::= Constants "::" [Constants] ;
 
-ConIdent. Constants ::= Ident;
+ConIdent. Constants ::= CppIdent;
 ConTemplate. Constants ::= TemplateInstatiation;
 
-TemplateIns. TemplateInstatiation ::= Ident "<" TypeListEnum ">" ;
+TemplateIns. TemplateInstatiation ::= CppIdent "<" TypeListEnum ">" ;
 AllEnum.  TypeListEnum ::= EnumTypes ;
 MoreEnum. TypeListEnum ::= EnumTypes "," "..." ;
 
@@ -167,16 +170,11 @@ SiterOne. Iter_stm ::= "while" "(" Exp ")" Stm ;
 SiterTwo. Iter_stm ::= "for" "(" ForInit Exp ";" Exp ")" Stm ;
 SiterThree.	Iter_stm ::= "do" Stm "while" "(" Exp ")";
 
-DVar.		ForInit ::= Declaration_specifier ";";
+DVar. ForInit ::= Declaration_specifier ";";
 
 
 
 SjumpFive. Jump_stm ::= "return" Exp ";" ;
-
-
-
-(:[]).   [Stm] ::= Stm ;
-(:). [Stm] ::= Stm [Stm];
 
 
 
@@ -233,7 +231,7 @@ coercions Exp 16;
 
 
 
---token CppIdent (letter | (letter | digit | '_')*) ;
+token CppIdent letter (letter | digit | '_')* ;
 
 token JChar '\'' ((char - ["'\\"]) | ('\\' ["'\\ntr"])) '\'';
 
